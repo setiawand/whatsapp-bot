@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  whatsapp-bot:
+    build: .
+    container_name: whatsapp-bot
+    restart: unless-stopped
+    volumes:
+      # Mount volume untuk menyimpan session data agar tidak hilang saat container restart
+      - whatsapp_sessions:/app/.wwebjs_auth
+      - whatsapp_cache:/app/.wwebjs_cache
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3002:3002"  # Dashboard API port
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Resource limits (opsional)
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    networks:
+      - whatsapp-network
+
+  dashboard:
+    build: 
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: whatsapp-dashboard
+    restart: unless-stopped
+    ports:
+      - "3001:3000"  # Dashboard web interface
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://whatsapp-bot:3002
+    depends_on:
+      - whatsapp-bot
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+    
+    networks:
+      - whatsapp-network
+
+networks:
+  whatsapp-network:
+    driver: bridge
+
+volumes:
+  whatsapp_sessions:
+    driver: local
+  whatsapp_cache:
+    driver: local

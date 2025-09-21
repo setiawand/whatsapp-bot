@@ -1,0 +1,42 @@
+# Dockerfile untuk development - minimal optimisasi, build cepat
+FROM node:18-alpine
+
+# Install Chromium dan dependencies yang diperlukan
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    && rm -rf /var/cache/apk/*
+
+# Set environment variables untuk Puppeteer
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+WORKDIR /app
+
+# Copy package files dan install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Buat direktori untuk Chrome user data dan cache
+RUN mkdir -p /tmp/chrome-user-data /tmp/chrome-cache && \
+    chmod 777 /tmp/chrome-user-data /tmp/chrome-cache
+
+# Buat user non-root untuk keamanan
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S whatsapp -u 1001 -G nodejs
+
+# Set ownership
+RUN chown -R whatsapp:nodejs /app /tmp/chrome-user-data /tmp/chrome-cache
+USER whatsapp
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
