@@ -50,7 +50,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     // Koneksi ke Socket.io server
-    const newSocket = io('http://localhost:3002');
+    const newSocket = io(process.env.NEXT_PUBLIC_BOT_SERVER_URL || 'http://localhost:3002');
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
@@ -88,7 +88,7 @@ export default function Dashboard() {
 
     setSendingMessage(true);
     try {
-      const response = await fetch('http://localhost:3002/api/send-message', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BOT_SERVER_URL || 'http://localhost:3002'}/api/send-message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
