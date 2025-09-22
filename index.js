@@ -35,7 +35,7 @@ const MAX_LOGS = 100; // Batasi jumlah log
 // QR Code management
 let qrGenerationCount = 0;
 let lastQrTime = null;
-const QR_TIMEOUT = 60000; // 60 detik timeout untuk QR code
+const QR_TIMEOUT = 300000; // 60 detik timeout untuk QR code
 
 // Membuat instance client WhatsApp dengan autentikasi lokal
 const client = new Client({
@@ -115,7 +115,7 @@ client.on('qr', async (qr) => {
         io.emit('botStatus', botStatus);
         
         console.log('📱 QR Code telah dikirim ke dashboard');
-        console.log('⚠️  QR Code akan expired dalam 60 detik, silakan scan segera!');
+        console.log('⚠️  QR Code akan expired dalam 5 menit, silakan scan segera!');
         
         // Set timeout untuk clear QR code jika tidak di-scan
         setTimeout(() => {
